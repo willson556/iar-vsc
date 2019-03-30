@@ -21,35 +21,39 @@ export interface Config {
 }
 
 class XmlConfig implements Config {
-    private xml: XmlNode;
+  private xml: XmlNode;
 
-    readonly defines: Define[];
-    readonly includes: IncludePath[];
-    readonly preIncludes: PreIncludePath[];
+  readonly defines: Define[];
+  readonly includes: IncludePath[];
+  readonly preIncludes: PreIncludePath[];
 
-    constructor(xmlConfigElement: XmlNode, ewpPath: Fs.PathLike) {
-        this.xml = xmlConfigElement;
+  constructor(xmlConfigElement: XmlNode, ewpPath: Fs.PathLike) {
+    this.xml = xmlConfigElement;
 
-        if (this.xml.tagName !== 'configuration') {
-            throw new Error("Expected an xml element 'configuration' instead of '" + this.xml.tagName + "'");
-        }
-
-        const projectRoot = Path.parse(ewpPath.toString()).dir;
-
-        this.defines = Define.fromXml(xmlConfigElement);
-        this.includes = IncludePath.fromXmlData(xmlConfigElement, projectRoot);
-        this.preIncludes = PreIncludePath.fromXml(xmlConfigElement, projectRoot);
+    if (this.xml.tagName !== "configuration") {
+      throw new Error(
+        "Expected an xml element 'configuration' instead of '" +
+          this.xml.tagName +
+          "'"
+      );
     }
 
-    get name(): string {
-        let name = IarXml.getNameTextFromElement(this.xml);
+    const projectRoot = Path.parse(ewpPath.toString()).dir;
 
-        if (name === undefined) {
-            return "";
-        } else {
-            return name;
-        }
+    this.defines = Define.fromXml(xmlConfigElement);
+    this.includes = IncludePath.fromXmlData(xmlConfigElement, projectRoot);
+    this.preIncludes = PreIncludePath.fromXml(xmlConfigElement, projectRoot);
+  }
+
+  get name(): string {
+    let name = IarXml.getNameTextFromElement(this.xml);
+
+    if (name === undefined) {
+      return "";
+    } else {
+      return name;
     }
+  }
 }
 
 export namespace Config {

@@ -11,6 +11,7 @@ import { SelectionView } from "./selectionview";
 import { Settings } from "../settings";
 import { Command } from "../command/command";
 import { Command as GenerateCommand } from "../command/generatecpptoolsconf";
+import { Command as GenerateCompilerCommandsCommand } from "../command/generatecompilercommands";
 import { Workbench } from "../../iar/tools/workbench";
 import { CompilerListModel } from "../model/selectcompiler";
 import { ListInputModel } from "../model/model";
@@ -37,6 +38,7 @@ class Application {
     readonly config: UI<Config>;
 
     readonly generator: Command;
+    readonly compilerCommandsGenerator: Command;
     readonly selectIarWorkspace: Command;
 
     constructor(context: Vscode.ExtensionContext, toolManager: ToolManager) {
@@ -53,6 +55,12 @@ class Application {
         this.generator = GenerateCommand.createGenerateCppToolsConfig(this.compiler.model as CompilerListModel,
             this.config.model as ConfigurationListModel);
         this.generator.register(context);
+
+        this.compilerCommandsGenerator = GenerateCompilerCommandsCommand.createGenerateCompilerCommands(
+            this.compiler.model as CompilerListModel,
+            this.config.model as ConfigurationListModel,
+            this.project.model as ProjectListModel);
+        this.compilerCommandsGenerator.register(context);
 
         this.selectIarWorkspace = new SelectIarWorkspace();
         this.selectIarWorkspace.register(context);

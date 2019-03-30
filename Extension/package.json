@@ -145,6 +145,11 @@
           "type": "string",
           "markdownDescription": "The name of the target microcontroller",
           "default": "undefined"
+        },
+        "iarvsc.enableCompilerCommandsGeneration": {
+          "type": "boolean",
+          "markdownDescription": "If true, a `compiler_commands.json` file will also be generated next to the project for use with other analysis tools.",
+          "default": false
         }
       }
     },
@@ -282,9 +287,10 @@
     "ts-sinon": "1.0.12"
   },
   "dependencies": {
-    "xml-js": "1.6.8",
-    "jsonc-parser": "1.0.0",
+    "@types/minimatch": "3.0.3",
     "child-exec": "1.0.0",
-    "fast-deep-equal": "2.0.1"
+    "fast-deep-equal": "2.0.1",
+    "jsonc-parser": "1.0.0",
+    "xml-js": "1.6.8"
   }
 }
