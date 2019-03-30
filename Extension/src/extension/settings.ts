@@ -12,13 +12,14 @@ export namespace Settings {
     type ChangeHandler = (section: Field, newValue: string) => void;
 
     export enum Field {
-        Workbench = "workbench",
-        Compiler = "compiler",
-        Ewp = "ewp",
-        Configuration = "configuration",
-        Defines = "defines",
-        CStandard = "cStandard",
-        CppStandard = "cppStandard"
+      Workbench = "workbench",
+      Compiler = "compiler",
+      Ewp = "ewp",
+      Configuration = "configuration",
+      Defines = "defines",
+      CStandard = "cStandard",
+      CppStandard = "cppStandard",
+      EnableCompilerCommandsGeneration = "enableCompilerCommandsGeneration",
     }
 
     const section = "iarvsc";
@@ -112,6 +113,10 @@ export namespace Settings {
 
     export function getCppStandard(): string {
         return Vscode.workspace.getConfiguration(section).get(Field.CppStandard) as string;
+    }
+
+    export function getEnableCompilerCommandsGeneration() : boolean {
+        return Vscode.workspace.getConfiguration(section).get(Field.EnableCompilerCommandsGeneration) as boolean;
     }
 
     function fireChange(field: Field, newValue: string) {

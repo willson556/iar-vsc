@@ -25,6 +25,10 @@ export namespace CompilerCommandsGenerator {
     compiler: Compiler,
     outPath?: Fs.PathLike
   ): Error | undefined {
+    if (!Settings.getEnableCompilerCommandsGeneration()) {
+        return new Error("Compile command generation is not enabled!");
+    }
+
     if (!outPath) {
         try {
             outPath = createDefaultOutputPath(getWorkspaceFolder());
