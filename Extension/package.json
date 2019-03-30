@@ -30,6 +30,7 @@
     "onCommand:iar.selectConfiguration",
     "onCommand:iar.generateCppToolsConfig",
     "onCommand:iar.selectIarWorkspace",
+    "onCommand:iar.generateCompilerCommands",
     "workspaceContains:**/*.ewp"
   ],
   "main": "./out/src/main",
@@ -58,6 +59,11 @@
       {
         "command": "iar.generateCppToolsConfig",
         "title": "Generate CppTools Config File",
+        "category": "IAR"
+      },
+      {
+        "command": "iar.generateCompilerCommands",
+        "title": "Generate compiler_commands.json File",
         "category": "IAR"
       }
     ],
