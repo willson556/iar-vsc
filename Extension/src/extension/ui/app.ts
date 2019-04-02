@@ -79,10 +79,12 @@ class Application {
         this.showHelper(this.config);
 
         this.generator.enabled = true;
+        this.compilerCommandsGenerator.enabled = true;
     }
 
     public hide(): void {
         this.generator.enabled = false;
+        this.compilerCommandsGenerator.enabled = false;
 
         this.hideHelper(this.workbench);
         this.hideHelper(this.compiler);

@@ -10,6 +10,7 @@ import { CompilerListModel } from "../model/selectcompiler";
 import { ConfigurationListModel } from "../model/selectconfiguration";
 import { CompilerCommandsGenerator } from "../../vsc/CompilerCommandsGenerator";
 import { ProjectListModel } from "../model/selectproject";
+import { Settings } from "../settings";
 
 class GenerateCompilerCommandsCommand extends CommandBase {
     private compilerModel: CompilerListModel;
@@ -23,9 +24,17 @@ class GenerateCompilerCommandsCommand extends CommandBase {
         this.configModel = configModel;
         this.projectModel = projectModel;
 
-        this.compilerModel.addOnSelectedHandler(this.executeImpl, this);
-        this.configModel.addOnSelectedHandler(this.executeImpl, this);
-        this.projectModel.addOnSelectedHandler(this.executeImpl, this);
+        this.compilerModel.addOnSelectedHandler(this.automaticExecution, this);
+        this.configModel.addOnSelectedHandler(this.automaticExecution, this);
+        this.projectModel.addOnSelectedHandler(this.automaticExecution, this);
+    }
+
+    automaticExecution(): void {
+        if (!Settings.getEnableCompilerCommandsGeneration()) {
+          return;
+        }
+
+        this.executeImpl();
     }
 
     executeImpl(): void {

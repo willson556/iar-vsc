@@ -25,10 +25,6 @@ export namespace CompilerCommandsGenerator {
     compiler: Compiler,
     outPath?: Fs.PathLike
   ): Error | undefined {
-    if (!Settings.getEnableCompilerCommandsGeneration()) {
-      return new Error("Compile command generation is not enabled!");
-    }
-
     if (!outPath) {
       outPath = createDefaultOutputPath(project.path);
     }
@@ -82,25 +78,43 @@ export namespace CompilerCommandsGenerator {
     return preIncludes.map(pi => `-include ${pi.workspaceRelativePath}`);
   }
 
-  function getStandardForFile(file: Fs.PathLike): string {
-    let fileAssociations = Vscode.workspace
+  function getStandardForFile(file: Fs.PathLike): string | undefined {
+    function matchInAssociations(
+      associations: { [pattern: string]: string },
+      filename: string
+    ): string | undefined {
+      for (const pattern in userFileAssociations) {
+        if (minimatch(filename as string, pattern)) {
+          return userFileAssociations[pattern];
+        }
+      }
+
+      return undefined;
+    }
+
+    let userFileAssociations = Vscode.workspace
       .getConfiguration("files")
       .get("associations") as { [pattern: string]: string };
 
-    if (fileAssociations == null) {
-      throw new Error("Could not get file associations!");
+    if (userFileAssociations == null) {
+      userFileAssociations = {};
     }
 
+    let filename = Path.basename(file as string);
     let fileAssociation: string | undefined = undefined;
-    for (const pattern in fileAssociations) {
-      if (minimatch(file as string, pattern)) {
-        fileAssociation = fileAssociations[pattern];
-        break;
-      }
+    fileAssociation = matchInAssociations(userFileAssociations, filename);
+
+    if (fileAssociation === undefined) {
+      let defaultFileAssociations = {
+        "*.c": "c",
+        "*.cpp": "cpp"
+      };
+
+      fileAssociation = matchInAssociations(defaultFileAssociations, filename);
     }
 
     if (fileAssociation === undefined) {
-      throw new Error(`Could not find language association for file: ${file}!`);
+      return undefined; // Not a file type we know about.
     }
 
     if (fileAssociation === "cpp") {
@@ -108,9 +122,7 @@ export namespace CompilerCommandsGenerator {
     } else if (fileAssociation === "c") {
       return Settings.getCStandard();
     } else {
-      throw new Error(
-        `Did not recognize associated language: ${fileAssociation}!`
-      );
+      return undefined; // Not a language we know about.
     }
   }
 
@@ -134,13 +146,15 @@ export namespace CompilerCommandsGenerator {
 
     let sourceFiles = project.sourceFiles;
 
-    return sourceFiles.map(sf => {
-      return {
-        directory: getWorkspaceFolder(),
-        file: sf.workspacePath,
-        arguments: args.concat(`-std=${getStandardForFile(sf.workspacePath)}`)
-      };
-    });
+    return sourceFiles
+      .filter(sf => getStandardForFile(sf.workspacePath) !== undefined)
+      .map(sf => {
+        return {
+          directory: getWorkspaceFolder(),
+          file: sf.workspacePath,
+          arguments: args.concat(`-std=${getStandardForFile(sf.workspacePath)}`)
+        };
+      });
   }
 
   function createOutDirectory(path: Fs.PathLike): void {
