@@ -18,6 +18,7 @@ export interface Compiler {
     readonly path: Fs.PathLike;
     readonly defines: Define[];
     readonly includePaths: IncludePath[];
+    readonly cmsisIncludePath: string;
 }
 
 type CompilerOutput = { defines: Define[], includePaths: IncludePath[] };
@@ -26,10 +27,11 @@ class IarCompiler implements Compiler {
     readonly path: Fs.PathLike;
     readonly defines: Define[];
     readonly includePaths: IncludePath[];
+    readonly cmsisIncludePath: string;
 
     /**
      * Create a new Compiler object.
-     * 
+     *
      * @param path Path to a compiler
      */
     constructor(path: Fs.PathLike) {
@@ -43,6 +45,7 @@ class IarCompiler implements Compiler {
 
         this.defines = defines;
         this.includePaths = includePaths;
+        this.cmsisIncludePath = Path.join(Fs.realpathSync(path), "..\\..\\CMSIS\\Core\\Include");
     }
 
     get name(): string {
@@ -116,7 +119,7 @@ class IarCompiler implements Compiler {
 export namespace Compiler {
     /**
      * Collect all available compilers for a platform.
-     * 
+     *
      * @param platform The platform for which we must find compilers.
      */
     export function collectCompilersFrom(root: Fs.PathLike): Compiler[] {
@@ -145,7 +148,7 @@ export namespace Compiler {
 
     /**
      * Create a new Compiler object.
-     * 
+     *
      * @param path The path to the compiler
      * @returns {undefined} When the path does not point to a valid compiler
      * @returns {Compiler} When the path points to a valid compiler

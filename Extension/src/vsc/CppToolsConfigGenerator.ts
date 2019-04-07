@@ -155,6 +155,10 @@ export namespace CppToolsConfigGenerator {
             includepaths = includepaths.concat(toIncludePathArray(compiler.includePaths, true));
         }
 
+        if (compiler && config && config.includeCmsis) {
+            includepaths.push(compiler.cmsisIncludePath);
+        }
+
         obj["name"] = "IAR";
         obj["defines"] = defines;
         obj["includePath"] = includepaths;

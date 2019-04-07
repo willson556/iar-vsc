@@ -10,7 +10,7 @@ import * as Path from "path";
 import * as equal from "fast-deep-equal";
 import * as minimatch from "minimatch";
 import { Config } from "../iar/project/config";
-import { IncludePath } from "../iar/project/includepath";
+import { IncludePath, StringIncludePath } from "../iar/project/includepath";
 import { PreIncludePath } from "../iar/project/preincludepath";
 import { Define } from "../iar/project/define";
 import { Compiler } from "../iar/tools/compiler";
@@ -67,15 +67,19 @@ export namespace CompilerCommandsGenerator {
   }
 
   function definesToStringArray(defines: Define[]): string[] {
-    return defines.map(d => `-D${d.identifier}=${d.value}`);
+    return defines.map(d => `-D${d.identifier}="${d.value}"`);
   }
 
   function includePathsToStringArray(includes: IncludePath[]): string[] {
-    return includes.map(i => `-I${i.workspacePath}`);
+    return includes.map(i => `-I"${i.workspacePath}"`);
+  }
+
+  function compilerIncludePathsToStringArray(includes: IncludePath[]): string[] {
+    return includes.map(i => `-isystem"${i.workspacePath}"`);
   }
 
   function preIncludesToStringArray(preIncludes: PreIncludePath[]): string[] {
-    return preIncludes.map(pi => `-include ${pi.workspaceRelativePath}`);
+    return preIncludes.map(pi => `-include "${pi.workspaceRelativePath}"`);
   }
 
   function getStandardForFile(file: Fs.PathLike): string | undefined {
@@ -83,9 +87,9 @@ export namespace CompilerCommandsGenerator {
       associations: { [pattern: string]: string },
       filename: string
     ): string | undefined {
-      for (const pattern in userFileAssociations) {
+      for (const pattern in associations) {
         if (minimatch(filename as string, pattern)) {
-          return userFileAssociations[pattern];
+          return associations[pattern];
         }
       }
 
@@ -131,17 +135,20 @@ export namespace CompilerCommandsGenerator {
     compiler: Compiler,
     project: Project
   ): any {
-    let defines = definesToStringArray(
+    let defineArgs = definesToStringArray(
       config.defines.concat(compiler.defines)
-    ).concat(Settings.getDefines());
-    let includepaths = includePathsToStringArray(
-      config.includes.concat(compiler.includePaths)
-    );
-    let preincludes = preIncludesToStringArray(config.preIncludes);
-    let otherArguments = ["-nobuiltininc"];
-    let args = defines
-      .concat(includepaths)
-      .concat(preincludes)
+    ).concat(Settings.getDefines().map((d) => `-D${d}`));
+
+    let systemIncludePaths = compiler.includePaths.slice();
+    if (config.includeCmsis) {
+      systemIncludePaths.push(new StringIncludePath(compiler.cmsisIncludePath));
+    }
+
+    let otherArguments = ["-nobuiltininc",];
+    let args = defineArgs
+      .concat(includePathsToStringArray(config.includes))
+      .concat(compilerIncludePathsToStringArray(systemIncludePaths))
+      .concat(preIncludesToStringArray(config.preIncludes))
       .concat(otherArguments);
 
     let sourceFiles = project.sourceFiles;
@@ -152,7 +159,7 @@ export namespace CompilerCommandsGenerator {
         return {
           directory: getWorkspaceFolder(),
           file: sf.workspacePath,
-          arguments: args.concat(`-std=${getStandardForFile(sf.workspacePath)}`)
+          command: "/usr/bin/clang++ " + args.concat(`-std=${getStandardForFile(sf.workspacePath)}`).join(" ") + " " + sf.workspacePath,
         };
       });
   }

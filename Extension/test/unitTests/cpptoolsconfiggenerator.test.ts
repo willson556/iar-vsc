@@ -88,7 +88,8 @@ suite("CppToolsConfigGenerator", () => {
             name: name,
             defines: defines,
             includes: includePaths,
-            preIncludes: preIncludePaths
+            preIncludes: preIncludePaths,
+            includeCmsis: false,
         };
     }
 
@@ -106,14 +107,15 @@ suite("CppToolsConfigGenerator", () => {
             name: "cc",
             path: path,
             defines: defines,
-            includePaths: includePaths
+            includePaths: includePaths,
+            cmsisIncludePath: "C:\\MyCompiler\\CMSIS\\Include",
         };
     }
 
     /**
      * This function compares multiple arrays to check if they ALL contain the
      * same elements. This does not mean the order of the elements are the same!
-     * 
+     *
      * @param fnEqual A function that can check equality of each item
      * @param arrays The arrays to compare
      */
